@@ -396,9 +396,7 @@
                 <th>操作</th>
                 <th>担当者</th>
                 <th>伝票No</th>
-                <th>指定区分</th>
-                <th>時刻1</th>
-                <th>時刻2</th>
+                <th>指定内容</th>
                 <th>CS</th>
                 <th>場所</th>
                 <th>理由</th>
@@ -770,7 +768,7 @@
       document.getElementById('search-count').textContent = '(' + currentSearchResults.length + '件)';
 
       if (currentSearchResults.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#999; padding:20px;">該当データがありません</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#999; padding:20px;">該当データがありません</td></tr>';
         return;
       }
 
@@ -783,15 +781,24 @@
           '</td>' +
           '<td>' + esc(rec['担当者']) + '</td>' +
           '<td>' + esc(rec['伝票No']) + '</td>' +
-          '<td>' + esc(rec['指定区分']) + '</td>' +
-          '<td>' + esc(rec['指定時刻1']) + '</td>' +
-          '<td>' + esc(rec['指定時刻2']) + '</td>' +
+          '<td>' + esc(formatDesignation(rec)) + '</td>' +
           '<td>' + (rec['CS有無'] ? 'あり' : '') + '</td>' +
           '<td>' + esc(rec['場所']) + '</td>' +
           '<td>' + esc(rec['理由']) + '</td>' +
           '<td>' + esc(rec['備考']) + '</td>';
         tbody.appendChild(tr);
       });
+    }
+
+    function formatDesignation(rec) {
+      var cat = rec['指定区分'] || '';
+      var t1  = rec['指定時刻1'] || '';
+      var t2  = rec['指定時刻2'] || '';
+      if (cat === '何時以降')       return t1 + '以降';
+      if (cat === '何時まで完了')   return t1 + 'まで完了';
+      if (cat === '何時から何時')   return t1 + 'から' + t2;
+      if (cat === '何時から何時以外') return t1 + 'から' + t2 + '以外';
+      return cat;
     }
 
     function esc(val) {
