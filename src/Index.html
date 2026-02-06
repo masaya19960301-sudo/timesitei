@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    /* ============================================================
+       全体レイアウト
+       ============================================================ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      font-size: 14px;
+      color: #333;
+      background: #f5f7fa;
+    }
+    .app-header {
+      background: #1a73e8;
+      color: #fff;
+      padding: 12px 24px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+    /* ============================================================
+       タブ
+       ============================================================ */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #1a73e8;
+    }
+    .tab-btn {
+      padding: 10px 24px;
+      border: none;
+      background: #e8eef7;
+      color: #1a73e8;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 6px 6px 0 0;
+      transition: background 0.2s;
+    }
+    .tab-btn:hover { background: #d0ddf0; }
+    .tab-btn.active { background: #1a73e8; color: #fff; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ============================================================
+       フォーム共通
+       ============================================================ */
+    .form-group { margin-bottom: 12px; }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+    .form-group label .required {
+      color: #d93025;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+    textarea { resize: vertical; min-height: 60px; }
+    .form-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .form-row .form-group { flex: 1; min-width: 180px; }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 4px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       ボタン
+       ============================================================ */
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #1557b0; }
+    .btn-danger { background: #d93025; color: #fff; }
+    .btn-danger:hover:not(:disabled) { background: #b3261e; }
+    .btn-secondary { background: #5f6368; color: #fff; }
+    .btn-secondary:hover:not(:disabled) { background: #444; }
+    .btn-sm { padding: 4px 12px; font-size: 12px; }
+
+    /* ============================================================
+       カード
+       ============================================================ */
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+
+    /* ============================================================
+       テーブル
+       ============================================================ */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th {
+      background: #f1f3f4;
+      padding: 8px 10px;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 2px solid #ddd;
+      font-weight: bold;
+    }
+    tbody td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      white-space: nowrap;
+    }
+    tbody tr:hover { background: #f8f9ff; }
+
+    /* ============================================================
+       モーダル
+       ============================================================ */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: #fff;
+      border-radius: 8px;
+      padding: 24px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .modal-header h3 { font-size: 16px; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #666;
+      line-height: 1;
+    }
+    .modal-footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    /* ============================================================
+       集計結果
+       ============================================================ */
+    .summary-result {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .summary-item {
+      background: #f1f3f4;
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+    }
+    .summary-item .label { font-size: 12px; color: #666; }
+    .summary-item .value { font-size: 28px; font-weight: bold; color: #1a73e8; margin-top: 4px; }
+
+    /* ============================================================
+       通知
+       ============================================================ */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: bold;
+      z-index: 2000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #0d904f; }
+    .toast.error { background: #d93025; }
+
+    /* ============================================================
+       ローディング
+       ============================================================ */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    .loading.active { display: block; }
+    .spinner {
+      display: inline-block;
+      width: 24px; height: 24px;
+      border: 3px solid #e8eef7;
+      border-top-color: #1a73e8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ============================================================
+       時刻入力エリア
+       ============================================================ */
+    .time-inputs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .time-inputs select { width: auto; min-width: 80px; }
+    .time-sep { font-weight: bold; padding: 0 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <div class="app-header">配送時間指定 管理</div>
+
+  <div class="container">
+    <!-- タブ -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab-register">新規登録</button>
+      <button class="tab-btn" data-tab="tab-search">配送日検索</button>
+      <button class="tab-btn" data-tab="tab-summary">集計</button>
+    </div>
+
+    <!-- ============================================================
+         タブ1: 新規登録
+         ============================================================ -->
+    <div id="tab-register" class="tab-panel active">
+      <div class="card">
+        <div class="card-title">新規登録</div>
+        <form id="registerForm" onsubmit="return false;">
+          <div class="form-row">
+            <div class="form-group">
+              <label>配送日 <span class="required">必須</span></label>
+              <input type="date" id="reg-deliveryDate" required>
+            </div>
+            <div class="form-group">
+              <label>担当者（苗字） <span class="required">必須</span></label>
+              <select id="reg-staff">
+                <option value="">-- 選択 --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>伝票No（6桁）</label>
+              <input type="text" id="reg-slipNo" maxlength="6" placeholder="未確定なら空欄可">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>指定区分 <span class="required">必須</span></label>
+              <select id="reg-category" onchange="onCategoryChange('reg')">
+                <option value="">-- 選択 --</option>
+                <option value="何時以降">何時以降</option>
+                <option value="何時まで完了">何時まで完了</option>
+                <option value="何時から何時">何時から何時</option>
+                <option value="何時から何時以外">何時から何時以外</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row" id="reg-time-area">
+            <div class="form-group" id="reg-time1-group">
+              <label>指定時刻1 <span class="required" id="reg-time1-req">条件必須</span></label>
+              <select id="reg-time1"></select>
+            </div>
+            <div class="form-group" id="reg-time2-group" style="display:none;">
+              <label>指定時刻2 <span class="required" id="reg-time2-req">条件必須</span></label>
+              <select id="reg-time2"></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="flex:0 0 auto; min-width:120px;">
+              <label>CS有無 <span class="required">必須</span></label>
+              <div class="checkbox-group">
+                <input type="checkbox" id="reg-hasCS">
+                <label for="reg-hasCS" style="font-weight:normal;">CS あり</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>場所 <span class="required">必須</span></label>
+              <input type="text" id="reg-place" placeholder="例: 市区町村など" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>理由 <span class="required">必須</span></label>
+            <input type="text" id="reg-reason" required>
+          </div>
+          <div class="form-group">
+            <label>備考</label>
+            <textarea id="reg-note" placeholder="任意"></textarea>
+          </div>
+
+          <div style="margin-top:16px; text-align:right;">
+            <button type="button" class="btn btn-primary" id="btn-register" onclick="submitRegister()">登録する</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         タブ2: 配送日検索
+         ============================================================ -->
+    <div id="tab-search" class="tab-panel">
+      <div class="card">
+        <div class="card-title">配送日で検索</div>
+        <div class="form-row">
+          <div class="form-group" style="max-width:250px;">
+            <label>配送日</label>
+            <input type="date" id="search-date">
+          </div>
+          <div class="form-group" style="flex:0 0 auto; display:flex; align-items:flex-end;">
+            <button class="btn btn-primary" id="btn-search" onclick="doSearch()">検索</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading" id="search-loading">
+        <span class="spinner"></span>検索中...
+      </div>
+
+      <div class="card" id="search-result-card" style="display:none;">
+        <div class="card-title">検索結果 <span id="search-count" style="font-size:13px;color:#666;"></span></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>操作</th>
+                <th>担当者</th>
+                <th>伝票No</th>
+                <th>指定区分</th>
+                <th>時刻1</th>
+                <th>時刻2</th>
+                <th>CS</th>
+                <th>場所</th>
+                <th>理由</th>
+                <th>備考</th>
+              </tr>
+            </thead>
+            <tbody id="search-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         タブ3: 集計
+         ============================================================ -->
+    <div id="tab-summary" class="tab-panel">
+      <div class="card">
+        <div class="card-title">集計（期間 x 担当者）</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>開始日 <span class="required">必須</span></label>
+            <input type="date" id="sum-startDate">
+          </div>
+          <div class="form-group">
+            <label>終了日 <span class="required">必須</span></label>
+            <input type="date" id="sum-endDate">
+          </div>
+          <div class="form-group">
+            <label>担当者</label>
+            <select id="sum-staff">
+              <option value="全員">全員</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:0 0 auto; display:flex; align-items:flex-end;">
+            <button class="btn btn-primary" id="btn-summary" onclick="doSummary()">集計</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading" id="summary-loading">
+        <span class="spinner"></span>集計中...
+      </div>
+
+      <div class="card" id="summary-result-card" style="display:none;">
+        <div class="card-title">集計結果</div>
+        <div class="summary-result">
+          <div class="summary-item">
+            <div class="label">担当者件数</div>
+            <div class="value" id="sum-staffCount">-</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">全体件数</div>
+            <div class="value" id="sum-totalCount">-</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">割合</div>
+            <div class="value" id="sum-ratio">-</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">最終発生日</div>
+            <div class="value" id="sum-lastDate" style="font-size:18px;">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       編集モーダル
+       ============================================================ -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>レコード編集</h3>
+        <button class="modal-close" onclick="closeEditModal()">&times;</button>
+      </div>
+      <form id="editForm" onsubmit="return false;">
+        <input type="hidden" id="edit-id">
+        <div class="form-row">
+          <div class="form-group">
+            <label>配送日 <span class="required">必須</span></label>
+            <input type="date" id="edit-deliveryDate" required>
+          </div>
+          <div class="form-group">
+            <label>担当者（苗字） <span class="required">必須</span></label>
+            <select id="edit-staff">
+              <option value="">-- 選択 --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>伝票No（6桁）</label>
+            <input type="text" id="edit-slipNo" maxlength="6">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>指定区分 <span class="required">必須</span></label>
+            <select id="edit-category" onchange="onCategoryChange('edit')">
+              <option value="">-- 選択 --</option>
+              <option value="何時以降">何時以降</option>
+              <option value="何時まで完了">何時まで完了</option>
+              <option value="何時から何時">何時から何時</option>
+              <option value="何時から何時以外">何時から何時以外</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" id="edit-time1-group">
+            <label>指定時刻1 <span class="required" id="edit-time1-req">条件必須</span></label>
+            <select id="edit-time1"></select>
+          </div>
+          <div class="form-group" id="edit-time2-group" style="display:none;">
+            <label>指定時刻2 <span class="required" id="edit-time2-req">条件必須</span></label>
+            <select id="edit-time2"></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:0 0 auto; min-width:120px;">
+            <label>CS有無</label>
+            <div class="checkbox-group">
+              <input type="checkbox" id="edit-hasCS">
+              <label for="edit-hasCS" style="font-weight:normal;">CS あり</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>場所 <span class="required">必須</span></label>
+            <input type="text" id="edit-place" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>理由 <span class="required">必須</span></label>
+          <input type="text" id="edit-reason" required>
+        </div>
+        <div class="form-group">
+          <label>備考</label>
+          <textarea id="edit-note"></textarea>
+        </div>
+      </form>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeEditModal()">キャンセル</button>
+        <button class="btn btn-primary" id="btn-edit-save" onclick="submitEdit()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 確認ダイアログ用モーダル -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-content" style="max-width:400px; text-align:center;">
+      <div class="modal-header">
+        <h3>確認</h3>
+        <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+      </div>
+      <p id="confirm-message" style="padding:16px 0;">このレコードを削除しますか？</p>
+      <div class="modal-footer" style="justify-content:center;">
+        <button class="btn btn-secondary" onclick="closeConfirmModal()">キャンセル</button>
+        <button class="btn btn-danger" id="btn-confirm-ok" onclick="confirmDelete()">削除する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トースト通知 -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ============================================================
+    // グローバル状態
+    // ============================================================
+    var currentSearchResults = [];
+    var deleteTargetId = '';
+    var staffList = [];
+
+    // ============================================================
+    // 初期化
+    // ============================================================
+    window.addEventListener('DOMContentLoaded', function() {
+      initTimePickers('reg');
+      initTimePickers('edit');
+      loadStaffList();
+
+      // 配送日のデフォルトを今日に
+      var today = new Date().toISOString().split('T')[0];
+      document.getElementById('reg-deliveryDate').value = today;
+      document.getElementById('search-date').value = today;
+    });
+
+    // ============================================================
+    // タブ切り替え
+    // ============================================================
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // ============================================================
+    // 時刻プルダウン生成
+    // ============================================================
+    function initTimePickers(prefix) {
+      var sel1 = document.getElementById(prefix + '-time1');
+      var sel2 = document.getElementById(prefix + '-time2');
+      var opts = '<option value="">-- 選択 --</option>';
+      for (var h = 0; h < 24; h++) {
+        for (var m = 0; m < 60; m += 30) {
+          var val = ('0' + h).slice(-2) + ':' + ('0' + m).slice(-2);
+          opts += '<option value="' + val + '">' + val + '</option>';
+        }
+      }
+      sel1.innerHTML = opts;
+      sel2.innerHTML = opts;
+    }
+
+    // ============================================================
+    // 指定区分変更時の時刻フィールド制御
+    // ============================================================
+    function onCategoryChange(prefix) {
+      var cat = document.getElementById(prefix + '-category').value;
+      var g1 = document.getElementById(prefix + '-time1-group');
+      var g2 = document.getElementById(prefix + '-time2-group');
+
+      g1.style.display = '';
+      g2.style.display = 'none';
+
+      if (cat === '何時以降' || cat === '何時まで完了') {
+        // 時刻1のみ
+        g2.style.display = 'none';
+        document.getElementById(prefix + '-time2').value = '';
+      } else if (cat === '何時から何時' || cat === '何時から何時以外') {
+        // 時刻1 + 時刻2
+        g2.style.display = '';
+      } else {
+        g1.style.display = '';
+        g2.style.display = 'none';
+      }
+    }
+
+    // ============================================================
+    // 担当者リスト読み込み
+    // ============================================================
+    function loadStaffList() {
+      google.script.run.withSuccessHandler(function(list) {
+        staffList = list || [];
+        populateStaffSelect('reg-staff', staffList);
+        populateStaffSelect('edit-staff', staffList);
+        populateStaffSelect('sum-staff', staffList, true);
+      }).withFailureHandler(function(e) {
+        console.error('担当者一覧の読み込みに失敗:', e);
+      }).getStaffList();
+    }
+
+    function populateStaffSelect(selectId, list, addAll) {
+      var sel = document.getElementById(selectId);
+      var firstOpt = sel.options[0].outerHTML;
+      sel.innerHTML = firstOpt;
+      if (addAll) {
+        // 「全員」は既にHTMLにあるので追加しない
+      }
+      list.forEach(function(name) {
+        var opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+      });
+    }
+
+    // ============================================================
+    // バリデーション
+    // ============================================================
+    function validate(prefix) {
+      var errors = [];
+
+      var deliveryDate = document.getElementById(prefix + '-deliveryDate').value;
+      var staff = document.getElementById(prefix + '-staff').value;
+      var slipNo = document.getElementById(prefix + '-slipNo').value;
+      var category = document.getElementById(prefix + '-category').value;
+      var time1 = document.getElementById(prefix + '-time1').value;
+      var time2 = document.getElementById(prefix + '-time2').value;
+      var place = document.getElementById(prefix + '-place').value.trim();
+      var reason = document.getElementById(prefix + '-reason').value.trim();
+
+      if (!deliveryDate) errors.push('配送日は必須です。');
+      if (!staff) errors.push('担当者は必須です。');
+      if (slipNo && !/^\d{6}$/.test(slipNo)) errors.push('伝票Noは6桁数字で入力してください。');
+      if (!category) errors.push('指定区分は必須です。');
+
+      // 区分による時刻バリデーション
+      if (category === '何時以降' || category === '何時まで完了') {
+        if (!time1) errors.push('指定時刻1は必須です。');
+      } else if (category === '何時から何時' || category === '何時から何時以外') {
+        if (!time1) errors.push('指定時刻1は必須です。');
+        if (!time2) errors.push('指定時刻2は必須です。');
+      }
+
+      if (!place) errors.push('場所は必須です。');
+      if (!reason) errors.push('理由は必須です。');
+
+      return errors;
+    }
+
+    function getFormData(prefix) {
+      return {
+        deliveryDate: document.getElementById(prefix + '-deliveryDate').value,
+        staff:        document.getElementById(prefix + '-staff').value,
+        slipNo:       document.getElementById(prefix + '-slipNo').value.trim(),
+        category:     document.getElementById(prefix + '-category').value,
+        time1:        document.getElementById(prefix + '-time1').value,
+        time2:        document.getElementById(prefix + '-time2').value,
+        hasCS:        document.getElementById(prefix + '-hasCS').checked,
+        place:        document.getElementById(prefix + '-place').value.trim(),
+        reason:       document.getElementById(prefix + '-reason').value.trim(),
+        note:         document.getElementById(prefix + '-note').value.trim()
+      };
+    }
+
+    // ============================================================
+    // 登録
+    // ============================================================
+    function submitRegister() {
+      var errors = validate('reg');
+      if (errors.length > 0) {
+        showToast(errors.join('\n'), 'error');
+        return;
+      }
+
+      var data = getFormData('reg');
+      var btn = document.getElementById('btn-register');
+      btn.disabled = true;
+      btn.textContent = '登録中...';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          btn.textContent = '登録する';
+          if (result.success) {
+            showToast(result.message, 'success');
+            resetRegisterForm();
+          } else {
+            showToast(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(e) {
+          btn.disabled = false;
+          btn.textContent = '登録する';
+          showToast('通信エラーが発生しました。', 'error');
+        })
+        .createRecord(data);
+    }
+
+    function resetRegisterForm() {
+      var today = new Date().toISOString().split('T')[0];
+      document.getElementById('reg-deliveryDate').value = today;
+      document.getElementById('reg-staff').selectedIndex = 0;
+      document.getElementById('reg-slipNo').value = '';
+      document.getElementById('reg-category').selectedIndex = 0;
+      document.getElementById('reg-time1').selectedIndex = 0;
+      document.getElementById('reg-time2').selectedIndex = 0;
+      document.getElementById('reg-hasCS').checked = false;
+      document.getElementById('reg-place').value = '';
+      document.getElementById('reg-reason').value = '';
+      document.getElementById('reg-note').value = '';
+      onCategoryChange('reg');
+    }
+
+    // ============================================================
+    // 検索
+    // ============================================================
+    function doSearch() {
+      var dateStr = document.getElementById('search-date').value;
+      if (!dateStr) {
+        showToast('配送日を指定してください。', 'error');
+        return;
+      }
+
+      var btn = document.getElementById('btn-search');
+      btn.disabled = true;
+      document.getElementById('search-loading').classList.add('active');
+      document.getElementById('search-result-card').style.display = 'none';
+
+      google.script.run
+        .withSuccessHandler(function(results) {
+          btn.disabled = false;
+          document.getElementById('search-loading').classList.remove('active');
+          currentSearchResults = results || [];
+          renderSearchResults();
+        })
+        .withFailureHandler(function(e) {
+          btn.disabled = false;
+          document.getElementById('search-loading').classList.remove('active');
+          showToast('検索に失敗しました。', 'error');
+        })
+        .getRecordsByDeliveryDate(dateStr);
+    }
+
+    function renderSearchResults() {
+      var tbody = document.getElementById('search-tbody');
+      tbody.innerHTML = '';
+      document.getElementById('search-result-card').style.display = '';
+      document.getElementById('search-count').textContent = '(' + currentSearchResults.length + '件)';
+
+      if (currentSearchResults.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#999; padding:20px;">該当データがありません</td></tr>';
+        return;
+      }
+
+      currentSearchResults.forEach(function(rec, idx) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' +
+            '<button class="btn btn-primary btn-sm" onclick="openEditModal(' + idx + ')">編集</button> ' +
+            '<button class="btn btn-danger btn-sm" onclick="openConfirmModal(\'' + rec['登録ID'] + '\')">削除</button>' +
+          '</td>' +
+          '<td>' + esc(rec['担当者']) + '</td>' +
+          '<td>' + esc(rec['伝票No']) + '</td>' +
+          '<td>' + esc(rec['指定区分']) + '</td>' +
+          '<td>' + esc(rec['指定時刻1']) + '</td>' +
+          '<td>' + esc(rec['指定時刻2']) + '</td>' +
+          '<td>' + (rec['CS有無'] ? 'あり' : '') + '</td>' +
+          '<td>' + esc(rec['場所']) + '</td>' +
+          '<td>' + esc(rec['理由']) + '</td>' +
+          '<td>' + esc(rec['備考']) + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function esc(val) {
+      if (val === null || val === undefined) return '';
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(String(val)));
+      return div.innerHTML;
+    }
+
+    // ============================================================
+    // 編集モーダル
+    // ============================================================
+    function openEditModal(idx) {
+      var rec = currentSearchResults[idx];
+      if (!rec) return;
+
+      document.getElementById('edit-id').value = rec['登録ID'];
+      document.getElementById('edit-deliveryDate').value = rec['配送日'];
+      document.getElementById('edit-staff').value = rec['担当者'];
+      document.getElementById('edit-slipNo').value = rec['伝票No'] || '';
+      document.getElementById('edit-category').value = rec['指定区分'];
+      onCategoryChange('edit');
+      document.getElementById('edit-time1').value = rec['指定時刻1'] || '';
+      document.getElementById('edit-time2').value = rec['指定時刻2'] || '';
+      document.getElementById('edit-hasCS').checked = rec['CS有無'];
+      document.getElementById('edit-place').value = rec['場所'] || '';
+      document.getElementById('edit-reason').value = rec['理由'] || '';
+      document.getElementById('edit-note').value = rec['備考'] || '';
+
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('active');
+    }
+
+    function submitEdit() {
+      var errors = validate('edit');
+      if (errors.length > 0) {
+        showToast(errors.join('\n'), 'error');
+        return;
+      }
+
+      var id = document.getElementById('edit-id').value;
+      var data = getFormData('edit');
+      var btn = document.getElementById('btn-edit-save');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          btn.textContent = '保存';
+          if (result.success) {
+            showToast(result.message, 'success');
+            closeEditModal();
+            doSearch(); // 再検索して一覧を更新
+          } else {
+            showToast(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(e) {
+          btn.disabled = false;
+          btn.textContent = '保存';
+          showToast('通信エラーが発生しました。', 'error');
+        })
+        .updateRecord(id, data);
+    }
+
+    // ============================================================
+    // 削除確認モーダル
+    // ============================================================
+    function openConfirmModal(id) {
+      deleteTargetId = id;
+      document.getElementById('confirmModal').classList.add('active');
+    }
+
+    function closeConfirmModal() {
+      deleteTargetId = '';
+      document.getElementById('confirmModal').classList.remove('active');
+    }
+
+    function confirmDelete() {
+      if (!deleteTargetId) return;
+
+      var btn = document.getElementById('btn-confirm-ok');
+      btn.disabled = true;
+      btn.textContent = '削除中...';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          btn.textContent = '削除する';
+          closeConfirmModal();
+          if (result.success) {
+            showToast(result.message, 'success');
+            doSearch(); // 再検索
+          } else {
+            showToast(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(e) {
+          btn.disabled = false;
+          btn.textContent = '削除する';
+          showToast('通信エラーが発生しました。', 'error');
+        })
+        .deleteRecord(deleteTargetId);
+    }
+
+    // ============================================================
+    // 集計
+    // ============================================================
+    function doSummary() {
+      var startDate = document.getElementById('sum-startDate').value;
+      var endDate   = document.getElementById('sum-endDate').value;
+      var staff     = document.getElementById('sum-staff').value;
+
+      if (!startDate || !endDate) {
+        showToast('開始日・終了日は必須です。', 'error');
+        return;
+      }
+      if (startDate > endDate) {
+        showToast('開始日は終了日以前を指定してください。', 'error');
+        return;
+      }
+
+      var btn = document.getElementById('btn-summary');
+      btn.disabled = true;
+      document.getElementById('summary-loading').classList.add('active');
+      document.getElementById('summary-result-card').style.display = 'none';
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          document.getElementById('summary-loading').classList.remove('active');
+          document.getElementById('summary-result-card').style.display = '';
+
+          document.getElementById('sum-staffCount').textContent = result.staffCount;
+          document.getElementById('sum-totalCount').textContent = result.totalCount;
+          document.getElementById('sum-ratio').textContent = result.ratio + '%';
+          document.getElementById('sum-lastDate').textContent = result.lastDate || '-';
+        })
+        .withFailureHandler(function(e) {
+          btn.disabled = false;
+          document.getElementById('summary-loading').classList.remove('active');
+          showToast('集計に失敗しました。', 'error');
+        })
+        .getSummary(startDate, endDate, staff);
+    }
+
+    // ============================================================
+    // トースト通知
+    // ============================================================
+    function showToast(message, type) {
+      var toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + (type || 'success');
+      toast.classList.add('show');
+      setTimeout(function() {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
