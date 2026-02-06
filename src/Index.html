@@ -304,9 +304,7 @@
             </div>
             <div class="form-group">
               <label>担当者（苗字） <span class="required">必須</span></label>
-              <select id="reg-staff">
-                <option value="">-- 選択 --</option>
-              </select>
+              <input type="text" id="reg-staff" placeholder="苗字を入力" required>
             </div>
             <div class="form-group">
               <label>伝票No（6桁）</label>
@@ -430,9 +428,7 @@
           </div>
           <div class="form-group">
             <label>担当者</label>
-            <select id="sum-staff">
-              <option value="全員">全員</option>
-            </select>
+            <input type="text" id="sum-staff" placeholder="空欄で全員">
           </div>
           <div class="form-group" style="flex:0 0 auto; display:flex; align-items:flex-end;">
             <button class="btn btn-primary" id="btn-summary" onclick="doSummary()">集計</button>
@@ -486,9 +482,7 @@
           </div>
           <div class="form-group">
             <label>担当者（苗字） <span class="required">必須</span></label>
-            <select id="edit-staff">
-              <option value="">-- 選択 --</option>
-            </select>
+            <input type="text" id="edit-staff" placeholder="苗字を入力" required>
           </div>
           <div class="form-group">
             <label>伝票No（6桁）</label>
@@ -574,7 +568,6 @@
     // ============================================================
     var currentSearchResults = [];
     var deleteTargetId = '';
-    var staffList = [];
 
     // ============================================================
     // 初期化
@@ -582,7 +575,6 @@
     window.addEventListener('DOMContentLoaded', function() {
       initTimePickers('reg');
       initTimePickers('edit');
-      loadStaffList();
 
       // 配送日のデフォルトを今日に
       var today = new Date().toISOString().split('T')[0];
@@ -644,42 +636,13 @@
     }
 
     // ============================================================
-    // 担当者リスト読み込み
-    // ============================================================
-    function loadStaffList() {
-      google.script.run.withSuccessHandler(function(list) {
-        staffList = list || [];
-        populateStaffSelect('reg-staff', staffList);
-        populateStaffSelect('edit-staff', staffList);
-        populateStaffSelect('sum-staff', staffList, true);
-      }).withFailureHandler(function(e) {
-        console.error('担当者一覧の読み込みに失敗:', e);
-      }).getStaffList();
-    }
-
-    function populateStaffSelect(selectId, list, addAll) {
-      var sel = document.getElementById(selectId);
-      var firstOpt = sel.options[0].outerHTML;
-      sel.innerHTML = firstOpt;
-      if (addAll) {
-        // 「全員」は既にHTMLにあるので追加しない
-      }
-      list.forEach(function(name) {
-        var opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name;
-        sel.appendChild(opt);
-      });
-    }
-
-    // ============================================================
     // バリデーション
     // ============================================================
     function validate(prefix) {
       var errors = [];
 
       var deliveryDate = document.getElementById(prefix + '-deliveryDate').value;
-      var staff = document.getElementById(prefix + '-staff').value;
+      var staff = document.getElementById(prefix + '-staff').value.trim();
       var slipNo = document.getElementById(prefix + '-slipNo').value;
       var category = document.getElementById(prefix + '-category').value;
       var time1 = document.getElementById(prefix + '-time1').value;
@@ -709,7 +672,7 @@
     function getFormData(prefix) {
       return {
         deliveryDate: document.getElementById(prefix + '-deliveryDate').value,
-        staff:        document.getElementById(prefix + '-staff').value,
+        staff:        document.getElementById(prefix + '-staff').value.trim(),
         slipNo:       document.getElementById(prefix + '-slipNo').value.trim(),
         category:     document.getElementById(prefix + '-category').value,
         time1:        document.getElementById(prefix + '-time1').value,
@@ -758,7 +721,7 @@
     function resetRegisterForm() {
       var today = new Date().toISOString().split('T')[0];
       document.getElementById('reg-deliveryDate').value = today;
-      document.getElementById('reg-staff').selectedIndex = 0;
+      document.getElementById('reg-staff').value = '';
       document.getElementById('reg-slipNo').value = '';
       document.getElementById('reg-category').selectedIndex = 0;
       document.getElementById('reg-time1').selectedIndex = 0;
@@ -944,7 +907,7 @@
     function doSummary() {
       var startDate = document.getElementById('sum-startDate').value;
       var endDate   = document.getElementById('sum-endDate').value;
-      var staff     = document.getElementById('sum-staff').value;
+      var staff     = document.getElementById('sum-staff').value.trim();
 
       if (!startDate || !endDate) {
         showToast('開始日・終了日は必須です。', 'error');
