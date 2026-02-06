@@ -93,6 +93,8 @@ function rowToObject(row) {
     if (val instanceof Date) {
       if (HEADERS[i] === '配送日') {
         val = Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+      } else if (HEADERS[i] === '指定時刻1' || HEADERS[i] === '指定時刻2') {
+        val = Utilities.formatDate(val, Session.getScriptTimeZone(), 'HH:mm');
       } else {
         val = Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
       }
@@ -338,16 +340,16 @@ function getSummary(startDate, endDate, staff) {
     var delFlag = row[13];
     if (delFlag === true || delFlag === 'TRUE' || delFlag === 'true') continue;
 
-    // 配送日取得
-    var deliveryDate = row[3];
+    // 登録日時(B列)から日付部分を取得
+    var regDate = row[1];
     var dateVal;
-    if (deliveryDate instanceof Date) {
-      dateVal = Utilities.formatDate(deliveryDate, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    if (regDate instanceof Date) {
+      dateVal = Utilities.formatDate(regDate, Session.getScriptTimeZone(), 'yyyy-MM-dd');
     } else {
-      dateVal = String(deliveryDate);
+      dateVal = String(regDate).substring(0, 10);
     }
 
-    // 期間フィルタ
+    // 期間フィルタ（登録日ベース）
     if (dateVal < startDate || dateVal > endDate) continue;
 
     // 全体件数（期間内の全担当者分）
@@ -382,27 +384,24 @@ function getSummary(startDate, endDate, staff) {
 }
 
 // ============================================================
-// 担当者一覧取得
+// 担当者一覧取得（DBの過去データからユニークな担当者名を返す）
 // ============================================================
 function getStaffList() {
-  var sheet;
-  try {
-    sheet = getOrCreateSheet(SHEET_MASTER);
-  } catch (e) {
-    return [];
-  }
-
+  var sheet = getOrCreateSheet(SHEET_DB);
   var lastRow = sheet.getLastRow();
   if (lastRow <= 1) return [];
 
-  var data = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  var data = sheet.getRange(2, 5, lastRow - 1, 1).getValues(); // E列: 担当者
+  var seen = {};
   var list = [];
   for (var i = 0; i < data.length; i++) {
     var val = String(data[i][0]).trim();
-    if (val !== '') {
+    if (val !== '' && !seen[val]) {
+      seen[val] = true;
       list.push(val);
     }
   }
+  list.sort();
   return list;
 }
 

@@ -426,7 +426,9 @@
           </div>
           <div class="form-group">
             <label>担当者</label>
-            <input type="text" id="sum-staff" placeholder="空欄で全員">
+            <select id="sum-staff">
+              <option value="">全員</option>
+            </select>
           </div>
           <div class="form-group" style="flex:0 0 auto; display:flex; align-items:flex-end;">
             <button class="btn btn-primary" id="btn-summary" onclick="doSummary()">集計</button>
@@ -573,6 +575,7 @@
     window.addEventListener('DOMContentLoaded', function() {
       initTimePickers('reg');
       initTimePickers('edit');
+      loadStaffList();
 
       // 配送日のデフォルトを今日に
       var today = new Date().toISOString().split('T')[0];
@@ -631,6 +634,23 @@
         g1.style.display = '';
         g2.style.display = 'none';
       }
+    }
+
+    // ============================================================
+    // 担当者リスト読み込み（集計タブ用）
+    // ============================================================
+    function loadStaffList() {
+      google.script.run.withSuccessHandler(function(list) {
+        var sel = document.getElementById('sum-staff');
+        (list || []).forEach(function(name) {
+          var opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          sel.appendChild(opt);
+        });
+      }).withFailureHandler(function(e) {
+        console.error('担当者一覧の読み込みに失敗:', e);
+      }).getStaffList();
     }
 
     // ============================================================
@@ -914,7 +934,7 @@
     function doSummary() {
       var startDate = document.getElementById('sum-startDate').value;
       var endDate   = document.getElementById('sum-endDate').value;
-      var staff     = document.getElementById('sum-staff').value.trim();
+      var staff     = document.getElementById('sum-staff').value;
 
       if (!startDate || !endDate) {
         showToast('開始日・終了日は必須です。', 'error');
